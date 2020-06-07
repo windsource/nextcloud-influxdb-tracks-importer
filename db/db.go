@@ -1,6 +1,7 @@
 package db
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -8,6 +9,7 @@ import (
 	_ "github.com/influxdata/influxdb1-client" // this is important because of the bug in go mod
 	influxClient "github.com/influxdata/influxdb1-client/v2"
 	"github.com/windsource/nextcloud-influxdb-tracks-importer/date"
+	"github.com/windsource/nextcloud-influxdb-tracks-importer/gpx"
 )
 
 type DbReader struct {
@@ -69,6 +71,41 @@ func (d *DbReader) GetDataOfDay(day date.Date) ([]influxClient.Result, error) {
 		return nil, response.Error()
 	}
 	return response.Results, nil
+}
+
+func (d *DbReader) GetGpxOfDay(year int, month time.Month, day int) (*gpx.GpxDoc, error) {
+	date := time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
+	timeString := date.Format(time.RFC3339)
+	queryString := fmt.Sprintf("SELECT time, alt, lat, lon FROM %s "+
+		"WHERE _type='location' AND \"user\"='%s' AND time >= '%s' AND time < '%s' + 1d "+
+		"ORDER BY time ASC",
+		d.measurement, d.user, timeString, timeString)
+	q := influxClient.NewQuery(queryString, d.dbName, "")
+	response, err := d.client.Query(q)
+	if err != nil {
+		return nil, err
+	}
+	if response.Error() != nil {
+		return nil, response.Error()
+	}
+	name := date.Format("2006-01-02")
+	gpxDoc := gpx.NewGpxDocument(name)
+
+	if len(response.Results) > 0 && len(response.Results[0].Series) > 0 {
+		trkpts := make([]gpx.Trkpt, 0, len(response.Results[0].Series[0].Values))
+		for _, v := range response.Results[0].Series[0].Values {
+			timestamp := v[0].(string)
+			ele, _ := v[1].(json.Number).Float64()
+			lat, _ := v[2].(json.Number).Float64()
+			lon, _ := v[3].(json.Number).Float64()
+
+			trkpt := gpx.Trkpt{Time: timestamp, Ele: ele, Lat: lat, Lon: lon}
+			trkpts = append(trkpts, trkpt)
+		}
+
+		gpxDoc.AddTrackpoints(trkpts)
+	}
+	return gpxDoc, nil
 }
 
 func (d *DbReader) Close() {

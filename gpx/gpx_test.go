@@ -6,7 +6,7 @@ import (
 
 func TestGpxDocument_ToXml(t *testing.T) {
 	want := `<?xml version="1.0" encoding="UTF-8"?>
-<gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1" creator="myself" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+<gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1" creator="windsource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
   <metadata>
     <name>The name</name>
   </metadata>
@@ -25,7 +25,7 @@ func TestGpxDocument_ToXml(t *testing.T) {
   </trk>
 </gpx>`
 
-	d := NewGpxDocument("myself", "The name")
+	d := NewGpxDocument("The name")
 	d.AddTrackpoints([]Trkpt{
 		{
 			Lat:  49.445237,

@@ -42,10 +42,10 @@ type (
 	}
 )
 
-func NewGpxDocument(creator string, name string) *GpxDoc {
+func NewGpxDocument(name string) *GpxDoc {
 	return &GpxDoc{
 		Version:           "1.1",
-		Creator:           creator,
+		Creator:           "windsource",
 		XmlnsXsi:          "http://www.w3.org/2001/XMLSchema-instance",
 		XsiSchemaLocation: "http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd",
 		Metadata:          Metadata{Name: name},
@@ -55,6 +55,10 @@ func NewGpxDocument(creator string, name string) *GpxDoc {
 
 func (d *GpxDoc) AddTrackpoints(trkpts []Trkpt) {
 	d.Trk.TrkSeg.Trkpts = trkpts
+}
+
+func (d *GpxDoc) IsEmpty() bool {
+	return len(d.Trk.TrkSeg.Trkpts) <= 1
 }
 
 func (d *GpxDoc) ToXml() string {
