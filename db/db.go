@@ -99,11 +99,11 @@ func (d *DbReader) GetGpxOfDay(year int, month time.Month, day int) (*gpx.GpxDoc
 			lat, _ := v[2].(json.Number).Float64()
 			lon, _ := v[3].(json.Number).Float64()
 
-			trkpt := gpx.Trkpt{Time: timestamp, Ele: ele, Lat: lat, Lon: lon}
-			trkpts = append(trkpts, trkpt)
+			trkpt := gpx.NewTrackpoint(lat, lon, ele, timestamp)
+			trkpts = append(trkpts, *trkpt)
 		}
 
-		gpxDoc.AddTrackpoints(trkpts)
+		gpxDoc.SetTrackpoints(trkpts)
 	}
 	return gpxDoc, nil
 }

@@ -3,6 +3,7 @@ package gpx
 import (
 	"encoding/xml"
 	"log"
+	"time"
 )
 
 type (
@@ -38,7 +39,7 @@ type (
 		Lat     float64  `xml:"lat,attr"`
 		Lon     float64  `xml:"lon,attr"`
 		Ele     float64  `xml:"ele"`
-		Time    string   `xml:"time"`
+		Time    GpxTime  `xml:"time"`
 	}
 )
 
@@ -53,7 +54,17 @@ func NewGpxDocument(name string) *GpxDoc {
 	}
 }
 
-func (d *GpxDoc) AddTrackpoints(trkpts []Trkpt) {
+func NewTrackpoint(lat float64, lon float64, ele float64, timeString string) *Trkpt {
+	var trkpt Trkpt
+	trkpt.Lat = lat
+	trkpt.Lon = lon
+	trkpt.Ele = ele
+	t, _ := time.Parse(time.RFC3339, timeString)
+	trkpt.Time = GpxTime{t}
+	return &trkpt
+}
+
+func (d *GpxDoc) SetTrackpoints(trkpts []Trkpt) {
 	d.Trk.TrkSeg.Trkpts = trkpts
 }
 
