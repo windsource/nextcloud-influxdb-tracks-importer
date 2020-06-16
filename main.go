@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"time"
 
 	"github.com/windsource/nextcloud-influxdb-tracks-importer/db"
+	nc "github.com/windsource/nextcloud-influxdb-tracks-importer/nextcloud"
 
 	_ "github.com/influxdata/influxdb1-client" // this is important because of the bug in go mod
 )
@@ -19,13 +19,41 @@ func dateOnly(t time.Time) time.Time {
 	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)
 }
 
-func main() {
-	host := "http://localhost:8080"
-	dbName := "owntracks"
-	measurement := "owntracks"
-	user := "holger"
+func getOptionalParameter(paramName string, defaultValue string) string {
+	if s := os.Getenv(paramName); s != "" {
+		return s
+	}
+	return defaultValue
+}
 
-	theDb, err := db.NewDbReader(host, dbName, measurement, user)
+func getMandatoryParameter(paramName string) string {
+	if s := os.Getenv(paramName); s != "" {
+		return s
+	}
+	log.Fatalf("Parameter %s not set!", paramName)
+	return "" // to satisfy lint
+}
+
+func main() {
+
+	influxdbHost := getOptionalParameter("INFLUXDB_HOST", "http://localhost:8080")
+	dbName := getOptionalParameter("INFLUXDB_DB_NAME", "owntracks")
+	measurement := getOptionalParameter("INFLUXDB_MEASUREMENT_NAME", "owntracks")
+	owntracksUser := getOptionalParameter("OWNTRACKS_USER", "holger")
+	nextcloudRoot := getMandatoryParameter("NEXTCLOUD_ROOT")
+	nextcloudUser := getMandatoryParameter("NEXTCLOUD_USER")
+	nextcloudPassword := getMandatoryParameter("NEXTCLOUD_PASSWORD")
+	trackDir := getOptionalParameter("TRACKDIR", "/Tracks/owntracks/")
+
+	ncClient := nc.New(nextcloudRoot, nextcloudUser, nextcloudPassword, trackDir)
+
+	latestTrackDateFromNextcloud, err := ncClient.GetLatestTrackDate()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Latest track date from Nextcloud: %v", latestTrackDateFromNextcloud)
+
+	theDb, err := db.NewDbReader(influxdbHost, dbName, measurement, owntracksUser)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -41,6 +69,9 @@ func main() {
 	}
 
 	startDate := dateOnly(first)
+	if latestTrackDateFromNextcloud.After(startDate) {
+		startDate = latestTrackDateFromNextcloud
+	}
 
 	for t := startDate; t.Before(last); t = t.AddDate(0, 0, 1) {
 		dateString := t.Format("2006-01-02")
@@ -55,14 +86,10 @@ func main() {
 			continue
 		}
 
-		filename := fmt.Sprintf("data/%s.gpx", dateString)
-		f, err := os.Create(filename)
+		err := ncClient.StoreTrack(t.Year(), t.Month(), t.Day(), []byte(gpxDoc.ToXml()))
 		if err != nil {
 			log.Println(err)
-			continue
 		}
-		_, _ = f.WriteString(gpxDoc.ToXml())
-		f.Close()
 	}
-
+	log.Println("Done")
 }

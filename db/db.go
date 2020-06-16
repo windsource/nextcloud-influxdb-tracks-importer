@@ -8,7 +8,6 @@ import (
 
 	_ "github.com/influxdata/influxdb1-client" // this is important because of the bug in go mod
 	influxClient "github.com/influxdata/influxdb1-client/v2"
-	"github.com/windsource/nextcloud-influxdb-tracks-importer/date"
 	"github.com/windsource/nextcloud-influxdb-tracks-importer/gpx"
 )
 
@@ -54,23 +53,6 @@ func (d *DbReader) GetBorderTimestamp(pos Position) (time.Time, error) {
 	// log.Println(response.Results[0].Series[0].Values[0][0].(string))
 	timestamp, err := time.Parse(time.RFC3339, response.Results[0].Series[0].Values[0][0].(string))
 	return timestamp, err
-}
-
-func (d *DbReader) GetDataOfDay(day date.Date) ([]influxClient.Result, error) {
-	timeString := day.ToTime().Format(time.RFC3339)
-	queryString := fmt.Sprintf("SELECT time, alt, lat, lon FROM %s "+
-		"WHERE _type='location' AND \"user\"='%s' AND time >= '%s' AND time < '%s' + 1d "+
-		"ORDER BY time ASC",
-		d.measurement, d.user, timeString, timeString)
-	q := influxClient.NewQuery(queryString, d.dbName, "")
-	response, err := d.client.Query(q)
-	if err != nil {
-		return nil, err
-	}
-	if response.Error() != nil {
-		return nil, response.Error()
-	}
-	return response.Results, nil
 }
 
 func (d *DbReader) GetGpxOfDay(year int, month time.Month, day int) (*gpx.GpxDoc, error) {
