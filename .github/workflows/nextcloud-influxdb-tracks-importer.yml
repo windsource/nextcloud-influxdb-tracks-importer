@@ -1,0 +1,25 @@
+name: nextcloud-influxdb-tracks-importer docker image
+
+on: [push]
+
+jobs:
+
+  buildAndPush:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Build the Docker image
+      run: |
+        make build
+
+    - name: Push the Docker image
+      env: 
+        DOCKER_HUB_USER: windsource
+        DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      run: |
+        docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PASSWORD
+        make push
+        

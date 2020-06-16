@@ -1,29 +1,50 @@
 # Nextcloud InfluxDB importer
 
 I love [OwnTracks](https://owntracks.org/) and store all the collected data in InfluxDB. I also use Nextcloud and I would like to visualize all my tracks in there using [Maps](https://apps.nextcloud.com/apps/maps). 
-This app read the stored locations from InfluxDB, converts data from one
-day to GPX and stores the resulting files in Nextcloud.
+The app in this project reads the stored locations from InfluxDB, converts data from every single
+day to GPX files and stores the resulting files in Nextcloud.
 
-## ToDo
+## Configuration
 
-* [x] Read available data from InfluxDB
-* [] Check what's already available in Nextcloud
-* [] For every missing day read data from InfluxDB
-* [] Convert to GPX
-* [] Store in Nextcloud
+The app can be configured by the following environment variables:
 
-## Notes
+* **INFLUXDB_URI**: URI of the InfluxDB, default "http://localhost:8086"
+* **INFLUXDB_DB_NAME**: Name of the InfluxDB database, default "owntracks"
+* **INFLUXDB_MEASUREMENT_NAME**: Name of the InfluxDB measurement that keeps the OwnTracks data, default "owntracks"
+* **OWNTRACKS_USER**: User whose track data should be extracted, default "holger"
+* **NEXTCLOUD_URI**: WebDAV URI of the Nextcloud instance
+* **NEXTCLOUD_USER**
+* **NEXTCLOUD_PASSWORD**
+* **TRACKDIR**: Path on Nextcloud where GPX files should be stored, default "/Tracks/owntracks/"
 
-Forward InfluxDB port to localhost:
+## Test
 
-```
-kubectl port-forward <pod name> <local port>:8086
-```
-
-Run influxdb locally:
-
-```
-docker run -it --rm --network host influxdb /bin/bash
-influx -precision rfc3339 -port <local port>
+```bash
+go test ./...
 ```
 
+## Build 
+
+```bash
+go build main.go
+```
+
+## Docker
+
+Build docker image with
+
+```bash
+make build
+```
+
+Push image using
+
+```bash
+make push
+```
+
+Run docker container using e.g.
+
+```bash
+docker run --rm -e "NEXTCLOUD_URI=https://my-nextcloud.de/remote.php/dav/files/holger/" -e "NEXTCLOUD_USER=holger" -e "NEXTCLOUD_PASSWORD=password" windsource/nextcloud-influxdb-tracks-importer
+```

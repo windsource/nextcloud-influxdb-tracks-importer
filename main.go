@@ -36,16 +36,16 @@ func getMandatoryParameter(paramName string) string {
 
 func main() {
 
-	influxdbHost := getOptionalParameter("INFLUXDB_HOST", "http://localhost:8080")
+	influxdbHost := getOptionalParameter("INFLUXDB_URI", "http://localhost:8086")
 	dbName := getOptionalParameter("INFLUXDB_DB_NAME", "owntracks")
 	measurement := getOptionalParameter("INFLUXDB_MEASUREMENT_NAME", "owntracks")
 	owntracksUser := getOptionalParameter("OWNTRACKS_USER", "holger")
-	nextcloudRoot := getMandatoryParameter("NEXTCLOUD_URI")
+	nextcloudUri := getMandatoryParameter("NEXTCLOUD_URI")
 	nextcloudUser := getMandatoryParameter("NEXTCLOUD_USER")
 	nextcloudPassword := getMandatoryParameter("NEXTCLOUD_PASSWORD")
 	trackDir := getOptionalParameter("TRACKDIR", "/Tracks/owntracks/")
 
-	ncClient := nc.New(nextcloudRoot, nextcloudUser, nextcloudPassword, trackDir)
+	ncClient := nc.New(nextcloudUri, nextcloudUser, nextcloudPassword, trackDir)
 
 	latestTrackDateFromNextcloud, err := ncClient.GetLatestTrackDate()
 	if err != nil {
