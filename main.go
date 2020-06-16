@@ -40,7 +40,7 @@ func main() {
 	dbName := getOptionalParameter("INFLUXDB_DB_NAME", "owntracks")
 	measurement := getOptionalParameter("INFLUXDB_MEASUREMENT_NAME", "owntracks")
 	owntracksUser := getOptionalParameter("OWNTRACKS_USER", "holger")
-	nextcloudRoot := getMandatoryParameter("NEXTCLOUD_ROOT")
+	nextcloudRoot := getMandatoryParameter("NEXTCLOUD_URI")
 	nextcloudUser := getMandatoryParameter("NEXTCLOUD_USER")
 	nextcloudPassword := getMandatoryParameter("NEXTCLOUD_PASSWORD")
 	trackDir := getOptionalParameter("TRACKDIR", "/Tracks/owntracks/")
