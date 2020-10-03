@@ -1,6 +1,6 @@
 .PHONY: build push
 
-IMAGE = windsource/nextcloud-influxdb-tracks-importer
+IMAGE = ghcr.io/windsource/nextcloud-influxdb-tracks-importer
 VERSION = 1.0.0
 
 build:

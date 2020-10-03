@@ -46,5 +46,5 @@ make push
 Run docker container using e.g.
 
 ```bash
-docker run --rm -e "NEXTCLOUD_URI=https://my-nextcloud.de/remote.php/dav/files/holger/" -e "NEXTCLOUD_USER=holger" -e "NEXTCLOUD_PASSWORD=password" windsource/nextcloud-influxdb-tracks-importer
+docker run --rm -e "NEXTCLOUD_URI=https://my-nextcloud.de/remote.php/dav/files/holger/" -e "NEXTCLOUD_USER=holger" -e "NEXTCLOUD_PASSWORD=password" ghcr.io/windsource/nextcloud-influxdb-tracks-importer
 ```
