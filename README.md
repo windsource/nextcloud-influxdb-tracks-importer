@@ -34,13 +34,7 @@ go build main.go
 Build docker image with
 
 ```bash
-make build
-```
-
-Push image using
-
-```bash
-make push
+docker buildx build -t ghcr.io/windsource/nextcloud-influxdb-tracks-importer:$(cat VERSION) .
 ```
 
 Run docker container using e.g.

@@ -5,22 +5,27 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-
+       
 jobs:
-
-  buildAndPush:
-
+  buildx:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-    - name: Build the Docker image
-      run: |
-        make build
-
-    - name: Push the Docker image
-      run: |
-        echo ${{ secrets.PAT_GHCR }} | docker login ghcr.io -u windsource --password-stdin
-        make push
-        
+      - name: login, build and push
+        run: |
+          echo ${{secrets.GITHUB_TOKEN}} | docker login ghcr.io -u windsource --password-stdin
+          # Create new builder
+          docker buildx create --name mybuilder --driver docker-container --bootstrap
+          # Use new builder
+          docker buildx use mybuilder
+          # Build and push
+          REPO=ghcr.io/windsource/nextcloud-influxdb-tracks-importer
+          docker buildx build --platform linux/amd64,linux/arm64 -t ${REPO}:$(cat VERSION) -t ${REPO}:latest --push .
